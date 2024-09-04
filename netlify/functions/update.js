@@ -10,6 +10,10 @@ const users = [];
 exports.handler = async (event) => {
     const { msg } = JSON.parse(event.body);
 
+    console.log(event);
+
+    console.log(msg);
+
     let user = msg.from;
 
     let exist = false;
