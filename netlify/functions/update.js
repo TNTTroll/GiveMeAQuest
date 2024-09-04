@@ -8,7 +8,7 @@ const users = [];
 
 // --- Main
 exports.handler = async (event) => {
-    const { msg } = JSON.parse(event.body);
+    const { msg } = JSON.parse(event['body']);
 
     console.log(event);
 
