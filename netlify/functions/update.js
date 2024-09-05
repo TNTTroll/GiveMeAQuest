@@ -70,11 +70,11 @@ exports.handler = async (event) => {
 
     console.log(">>>");
     console.log(message);
-    console.log(edited_msg);
+    console.log(edited_message);
 
     var msg = message;
     if (message == undefined)
-        msg = edited_msg;
+        msg = edited_message;
 
     console.log(msg);
 
