@@ -67,7 +67,11 @@ exports.handler = async (event) => {
 
     const { message } = JSON.parse(event.body);
 
+    console.log(event.body.edited_message);
+
+    console.log("------------");
     console.log(message);
+    console.log(message.message_id);
 
     const commandMatch = message.text.match(/(?<=\/).*?(?=$| |@)/);
     const command = commandMatch ? commandMatch[0] : null;
