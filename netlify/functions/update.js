@@ -62,7 +62,8 @@ function setDev(me) {
 // --- Main
 exports.handler = async (event) => {
     console.log("Привет! Я работаю, все хорошо ^_^");
-
+    console.log(event);
+    
     const { message } = JSON.parse(event.body);
 
     const commandMatch = message.text.match(/(?<=\/).*?(?=$| |@)/);
@@ -571,4 +572,6 @@ class Wish {
 /*
 https://app.netlify.com/sites/givemeaquest/overview
 https://travishorn.com/building-a-telegram-bot-with-netlify
+
+curl -F "url=https://givemeaquest.netlify.app/.netlify/functions/update" https://api.telegram.org/bot7210471516:AAFdLPjIDLt3YyV2_RFxhm2E1zW612IvO6Q/setWebhook
 */
