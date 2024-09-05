@@ -63,8 +63,10 @@ function setDev(me) {
 exports.handler = async (event) => {
     console.log("Привет! Я работаю, все хорошо ^_^");
     console.log(event);
-    
+
     const { message } = JSON.parse(event.body);
+
+    console.log(message);
 
     const commandMatch = message.text.match(/(?<=\/).*?(?=$| |@)/);
     const command = commandMatch ? commandMatch[0] : null;
