@@ -72,9 +72,11 @@ exports.handler = async (event) => {
     console.log(message);
     console.log(edited_msg);
 
-    const msg = message;
+    var msg = message;
     if (message == undefined)
         msg = edited_msg;
+
+    console.log(msg);
 
     const commandMatch = msg.text.match(/(?<=\/).*?(?=$| |@)/);
     const command = commandMatch ? commandMatch[0] : null;
