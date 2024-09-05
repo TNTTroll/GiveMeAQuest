@@ -63,6 +63,7 @@ function setDev(me) {
 exports.handler = async (event) => {
     console.log("Привет! Я работаю, все хорошо ^_^");
     console.log(event);
+    console.log(event.body);
 
     const { message } = JSON.parse(event.body);
 
