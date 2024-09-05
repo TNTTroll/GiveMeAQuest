@@ -6,17 +6,17 @@ const sendMessage = require("../../sendMessage");
 const users = [];
 
 const commands = {
-    "/points": "Узнать баллы всех членов Гильдии.",
+    "/addquest @user задание <баллы>": "Добавить свой квест. После команды нужно ввести имя пользователя, которому предназначается задание. Потом описать задание, а в конце в '<> скобках указать стоимость.",
+    "/action @user ОБНЯТЬ|ПОЦЕЛОВАТЬ|УКУСИТЬ|ПОКОРМИТЬ": "Совершить действие надо другим участником Гильдии.",
+    "/buy @user <номер письма>": "Введите команду, чтобы купить письмо другого участника. Внутри может быть какая-угодно информация. Только следите за ценами.",
+    "/delete КВЕСТ|ПИСЬМО": "Можно удалить свой квест или закрытое письмо. Открытые письма удалять уже нельзя, будьте осторожны с тем, что вывешиваете на своей доске.",
     "/help": "Узнать список всех возможных команд.",
     "/hi": "Вступить в Гильдию.",
-    "/users": "Посмотреть список всех участников Гильдии",
-    "/delete КВЕСТ|ПИСЬМО": "Можно удалить свой квест или закрытое письмо. Открытые письма удалять уже нельзя, будьте осторожны с тем, что вывешиваете на своей доске.",
-    "/letter @user <номер письма>": "Позволяет прочитать письмо другого участника",
-    "/buy @user <номер письма>": "Введите команду, чтобы купить письмо другого участника. Внутри может быть какая-угодно информация. Только следите за ценами.",
-    "/action @user ОБНЯТЬ|ПОЦЕЛОВАТЬ|УКУСИТЬ|ПОКОРМИТЬ": "Совершить действие надо другим участником Гильдии.",
     "/info [@user]": "Узнать всю информацию про участника Гильдии.",
+    "/letter @user <номер письма>": "Позволяет прочитать письмо другого участника",
+    "/points": "Узнать баллы всех членов Гильдии.",
     "/solved @user ДА|НЕТ <номер задания>": "Вы завершаете квест участника Гильдии. ДА - баллы выдаются участнику. НЕТ - задание считается невыполненым и баллы не выдаются.",
-    "/addquest @user задание <баллы>": "Добавить свой квест. После команды нужно ввести имя пользователя, которому предназначается задание. Потом описать задание, а в конце в '<> скобках указать стоимость.",
+    "/users": "Посмотреть список всех участников Гильдии",
 };
 
 
@@ -105,17 +105,23 @@ exports.handler = async (event) => {
 
 
     case "info":
-        if (aim != null) {  // Смотрит кого-то другого
-            let info = `Путник, про того, о ком ты спрашиваешь есть такая информация в Гильдии\nId: ${aim.id}\nИмя: ${aim.name}\nТег: ${aim.tag}\nБаллы: ${aim.points}\nКвесты:${aim.getAllQuests()}\nДоска закрытых писем:${users[0].getAllWishes()}\nДоска купленных писем:${users[0].getAllBought()}`;
+        if (aimText != null) {  // Смотрит кого-то другого
+            if (aim != null) {
+                let info = `Путник, про того, о ком ты спрашиваешь есть такая информация в Гильдии\nId: ${aim.id}\nИмя: ${aim.name}\nТег: ${aim.tag}\nБаллы: ${aim.points}\nКвесты:${aim.getAllQuests()}\nДоска закрытых писем:${aim.getAllWishes()}\nДоска купленных писем:${aim.getAllBought()}`;
 
-            await sendMessage(message.chat.id, info);
+                await sendMessage(message.chat.id, info);
+            } else {
+                let info = "Прости, Путник, я не узнаю этого человека... Попробуй использовать команду /hi, чтобы вступить в нашу гильдию!";
+
+                await sendMessage(message.chat.id, info);
+            }
         
         } else {  // Смотрит себя
             if (user == null)
                 await sendMessage(message.chat.id, 
                 "Прости, Путник, я не узнаю тебя... Попробуй использовать команду /hi, чтобы вступить в нашу гильдию!");
             else {
-                let info = `Путник, в нашей Гильдии есть такая информация про тебя\nId: ${user.id}\nИмя: ${user.name}\nТег: ${user.tag}\nБаллы: ${user.points}\nКвесты:${user.getAllQuests()}\nДоска закрытых писем:${users[0].getAllWishes()}\nДоска купленных писем:${users[0].getAllBought()}`;
+                let info = `Путник, в нашей Гильдии есть такая информация про тебя\nId: ${user.id}\nИмя: ${user.name}\nТег: ${user.tag}\nБаллы: ${user.points}\nКвесты:${user.getAllQuests()}\nДоска закрытых писем:${user.getAllWishes()}\nДоска купленных писем:${user.getAllBought()}`;
 
                 await sendMessage(message.chat.id, info);
             }
@@ -178,6 +184,7 @@ exports.handler = async (event) => {
                 if (solvedText.toLowerCase() == "да") {
                     let solvedQuest = aim.giveQuest(questNum);
                     if (solvedQuest != null) {
+                        aim.points += Number(aim.giveQuest(questNum).points);
                         await sendMessage(message.chat.id, 
                             `${aim.name} выполнил квест от ${user.name} и получил ${aim.giveQuest(questNum).points}! Поздравляем!`);
                         aim.deleteQuest(questNum);
@@ -237,7 +244,7 @@ exports.handler = async (event) => {
             let endBuy = extra.search(">");
 
             if (startBuy != -1 && endBuy != -1) {
-                let buyLetter = Number(extra.substring(startBuy+1, endBuy));
+                let buyLetter = Number(extra.substring(startBuy+1, endBuy))-1;
                 let letter = aim.giveWish(buyLetter);
                 
                 if (letter != null) {
@@ -272,7 +279,7 @@ exports.handler = async (event) => {
             let endLetter = extra.search(">");
 
             if (startLetter != -1 && endLetter != -1) {
-                let letterNum = extra.substring(startLetter+1, endLetter);
+                let letterNum = extra.substring(startLetter+1, endLetter)-1;
                 let myLetter = aim.giveBought(letterNum);
 
                 if (myLetter != null) {
@@ -297,7 +304,7 @@ exports.handler = async (event) => {
             let endDelete = extra.search(">");
 
             if (startDelete != -1 && endDelete != -1) {
-                let deleteNum = Number(extra.substring(startDelete+1, endDelete));
+                let deleteNum = Number(extra.substring(startDelete+1, endDelete))-1;
                 let deleteItem = extra.substring(0, startDelete-1).toLowerCase();
 
                 if (deleteItem == "квест") {
@@ -369,7 +376,7 @@ exports.handler = async (event) => {
             break;
         }
 
-        await sendMessage(message.chat.id, "Команда введена неверно. /god @user ТЕКСТ <число>");
+        await sendMessage(message.chat.id, "Команда введена неверно. /god @user БАЛЛ|ПИСЬМО <число>");
         break;
 
 
@@ -377,7 +384,7 @@ exports.handler = async (event) => {
 
         let usersString = "Список участников Гильдии:\n";
         for (let i = 0; i < users.length; i++)
-            usersString += `[${i+1}]: ${users[i].name} - ${users[i].points}\n`;
+            usersString += `[${i+1}]: ${users[i].name} - ${users[i].points/}\n`;
 
         await sendMessage(message.chat.id, usersString);
         break;
