@@ -1,5 +1,5 @@
 // --- Imports
-const sendMessage = require("../../sendMessage");
+const sendmsg = require("../../sendMessage");
 
 
 // --- Variables
@@ -21,9 +21,9 @@ const commands = {
 
 
 // --- Defs
-function getUser(message) {
+function getUser(msg) {
     for (let i = 0; i < users.length; i++)
-        if (users[i].id == message.from.id)
+        if (users[i].id == msg.from.id)
             return users[i];
 
     return null;
@@ -66,28 +66,32 @@ exports.handler = async (event) => {
     console.log(event.body);
 
     const { message } = JSON.parse(event.body);
-    const { edited_message } = JSON.parse(event.body);
+    const { edited_msg } = JSON.parse(event.body);
 
     console.log(">>>");
     console.log(message);
-    console.log(edited_message);
+    console.log(edited_msg);
 
-    const commandMatch = message.text.match(/(?<=\/).*?(?=$| |@)/);
+    const msg = message;
+    if (message == undefined)
+        msg = edited_msg;
+
+    const commandMatch = msg.text.match(/(?<=\/).*?(?=$| |@)/);
     const command = commandMatch ? commandMatch[0] : null;
 
-    const aimMatch = message.text.match(/(?<=@).*?(?=($| ))/);
+    const aimMatch = msg.text.match(/(?<=@).*?(?=($| ))/);
     const aimText = aimMatch ? aimMatch[0] : null;
 
-    const extraMatch = message.text.match(/(?<=\s).*?(?=$)/);
+    const extraMatch = msg.text.match(/(?<=\s).*?(?=$)/);
     var extra = extraMatch ? extraMatch[0] : null;
     if (extra != null)
         if (extra[0] === "@") 
             extra = extra.substring(extra.search(" ")+1);
 
-    const me = message.from;
+    const me = msg.from;
     //setDev(me);
 
-    const user = getUser(message);
+    const user = getUser(msg);
     const aim = (aimText != null) ? getUserByTag(aimText) : null;
 
     switch (command) {
@@ -97,7 +101,7 @@ exports.handler = async (event) => {
             if (users[i].id == me.id) {
                 exist = true;
 
-                await sendMessage(message.chat.id, 
+                await sendmsg(msg.chat.id, 
                     `С возвращением, ${users[i].name}!`);
             }
 
@@ -105,7 +109,7 @@ exports.handler = async (event) => {
             let newUser = new User(me.id, me.first_name, me.username);
             users.push(newUser);
 
-            await sendMessage(message.chat.id,
+            await sendmsg(msg.chat.id,
                 `Добро пожаловать в Гильдию, ${newUser.name}`);
         }
         break;
@@ -116,21 +120,21 @@ exports.handler = async (event) => {
             if (aim != null) {
                 let info = `Путник, про того, о ком ты спрашиваешь есть такая информация в Гильдии\nId: ${aim.id}\nИмя: ${aim.name}\nТег: ${aim.tag}\nБаллы: ${aim.points}\nКвесты:${aim.getAllQuests()}\nДоска закрытых писем:${aim.getAllWishes()}\nДоска купленных писем:${aim.getAllBought()}`;
 
-                await sendMessage(message.chat.id, info);
+                await sendmsg(msg.chat.id, info);
             } else {
                 let info = "Прости, Путник, я не узнаю этого человека... Попробуй использовать команду /hi, чтобы вступить в нашу гильдию!";
 
-                await sendMessage(message.chat.id, info);
+                await sendmsg(msg.chat.id, info);
             }
         
         } else {  // Смотрит себя
             if (user == null)
-                await sendMessage(message.chat.id, 
+                await sendmsg(msg.chat.id, 
                 "Прости, Путник, я не узнаю тебя... Попробуй использовать команду /hi, чтобы вступить в нашу гильдию!");
             else {
                 let info = `Путник, в нашей Гильдии есть такая информация про тебя\nId: ${user.id}\nИмя: ${user.name}\nТег: ${user.tag}\nБаллы: ${user.points}\nКвесты:${user.getAllQuests()}\nДоска закрытых писем:${user.getAllWishes()}\nДоска купленных писем:${user.getAllBought()}`;
 
-                await sendMessage(message.chat.id, info);
+                await sendmsg(msg.chat.id, info);
             }
         }
 
@@ -142,7 +146,7 @@ exports.handler = async (event) => {
         for (let i = 0; i < users.length; i++)
             points += `${users[i].name}: ${users[i].points}\n`;
 
-        await sendMessage(message.chat.id,
+        await sendmsg(msg.chat.id,
             `БАЛЛЫ ВСЕХ ЛЮДЕЙ В ГИЛЬДИИ\n\n${points}`);
         break;
 
@@ -154,7 +158,7 @@ exports.handler = async (event) => {
             if (commands.hasOwnProperty(key))
                 string += `${key}: ${commands[key]}\n`;
 
-        await sendMessage(message.chat.id, string);
+        await sendmsg(msg.chat.id, string);
         break;
 
 
@@ -168,14 +172,14 @@ exports.handler = async (event) => {
                 let points = extra.substring(start+1, end);
 
                 aim.newQuest( new Quest(questText, points) );
-                await sendMessage(message.chat.id, 
+                await sendmsg(msg.chat.id, 
                     `${aim.name}, Вам дали новое задание на ${points} баллов. Необходимо\n'${questText}'`);
 
                 break;
             }
         }
 
-        await sendMessage(message.chat.id, "Команда введена неверно. /addQuest @user Текст задания <баллы>");
+        await sendmsg(msg.chat.id, "Команда введена неверно. /addQuest @user Текст задания <баллы>");
         break;
     
 
@@ -192,22 +196,22 @@ exports.handler = async (event) => {
                     let solvedQuest = aim.giveQuest(questNum);
                     if (solvedQuest != null) {
                         aim.points += Number(aim.giveQuest(questNum).points);
-                        await sendMessage(message.chat.id, 
+                        await sendmsg(msg.chat.id, 
                             `${aim.name} выполнил квест от ${user.name} и получил ${aim.giveQuest(questNum).points}! Поздравляем!`);
                         aim.deleteQuest(questNum);
                     } else {
-                        await sendMessage(message.chat.id,
+                        await sendmsg(msg.chat.id,
                             `Номер квеста введен неверно. Попробуйте снова`);
                     }
                     
                 } else if (solvedText.toLowerCase() == "нет") { 
                     let solvedQuest = aim.giveQuest(questNum);
                     if (solvedQuest != null) {
-                        await sendMessage(message.chat.id, 
+                        await sendmsg(msg.chat.id, 
                             `Сожалеем! ${aim.name} не выполнил квест от ${user.name}!`);
                         aim.deleteQuest(questNum);
                     } else {
-                        await sendMessage(message.chat.id,
+                        await sendmsg(msg.chat.id,
                             `Номер квеста введен неверно. Попробуйте снова`);
                     }
                 }
@@ -216,7 +220,7 @@ exports.handler = async (event) => {
             }
         }
 
-        await sendMessage(message.chat.id, "Команда введена неверно. /solved @user ДА|НЕТ <номер квеста>");
+        await sendmsg(msg.chat.id, "Команда введена неверно. /solved @user ДА|НЕТ <номер квеста>");
         break;
 
 
@@ -234,14 +238,14 @@ exports.handler = async (event) => {
 
                 user.newWish( new Wish(wishName, wishCost, wishAnswer) );
 
-                await sendMessage(message.chat.id, 
+                await sendmsg(msg.chat.id, 
                     `Ваше письмо '${wishName}' было вывешено на торги за ${wishCost}. Его смогут купить другие участники Гильдии, если у них хватит на это баллов.`);
 
                 break;
             }
         }
 
-        await sendMessage(message.chat.id, "Команда введена неверно. /wish <стоимость> {название} ответ");
+        await sendmsg(msg.chat.id, "Команда введена неверно. /wish <стоимость> {название} ответ");
         break;
 
 
@@ -260,15 +264,15 @@ exports.handler = async (event) => {
                         aim.newBought(letter);
                         aim.deleteWish(buyLetter);
 
-                        await sendMessage(message.chat.id,
+                        await sendmsg(msg.chat.id,
                             `Письмо '${letter.name}' было куплено и открыто. У Вас осталось ${user.points} баллов. Оно останется висеть на доске, если захотите снова его прочесть.`);
                     } else {
-                        await sendMessage(message.chat.id, 
+                        await sendmsg(msg.chat.id, 
                             `Простите, но в Вашем кошельке не хватает золотых. У Вас ${user.points}, а нужно ${letter.cost}. Подзаработайте сначала, а потом ищите чужые секреты!`);
                     }
 
                 } else {
-                    await sendMessage(message.chat.id,
+                    await sendmsg(msg.chat.id,
                             `Номер письма введен неверно. Попробуйте снова`);
                 }
 
@@ -276,7 +280,7 @@ exports.handler = async (event) => {
             }
         }
 
-        await sendMessage(message.chat.id, "Команда введена неверно. /buy @user <номер письма>");
+        await sendmsg(msg.chat.id, "Команда введена неверно. /buy @user <номер письма>");
         break;
 
 
@@ -290,10 +294,10 @@ exports.handler = async (event) => {
                 let myLetter = aim.giveBought(letterNum);
 
                 if (myLetter != null) {
-                    await sendMessage(message.chat.id,
+                    await sendmsg(msg.chat.id,
                         `${myLetter.name}\n"${myLetter.text}"`);
                 } else {
-                    await sendMessage(message.chat.id,
+                    await sendmsg(msg.chat.id,
                         `Номер письма введен неверно. Попробуйте снова`);
                 }
 
@@ -301,7 +305,7 @@ exports.handler = async (event) => {
             }
         }
 
-        await sendMessage(message.chat.id, "Команда введена неверно. /letter @user <номер письма>");
+        await sendmsg(msg.chat.id, "Команда введена неверно. /letter @user <номер письма>");
         break;
 
 
@@ -317,27 +321,27 @@ exports.handler = async (event) => {
                 if (deleteItem == "квест") {
                     let myLetter = user.giveQuest(deleteNum);
                     if (myLetter != null) {
-                        await sendMessage(message.chat.id,
+                        await sendmsg(msg.chat.id,
                             `Квест '${user.quests[deleteNum].text}' удален.`);
                         user.deleteQuest(deleteNum);
                     } else {
-                        await sendMessage(message.chat.id,
+                        await sendmsg(msg.chat.id,
                         `Номер квеста введен неверно. Попробуйте снова`);
                     }
 
                 } else if (deleteItem == "письмо") {
                     let myLetter = user.giveWish(deleteNum);
                     if (myLetter != null) {
-                        await sendMessage(message.chat.id,
+                        await sendmsg(msg.chat.id,
                             `Письмо '${user.wishes[deleteNum].name}' удалено.`);
                         user.deleteWish(deleteNum);
                     } else {
-                        await sendMessage(message.chat.id,
+                        await sendmsg(msg.chat.id,
                         `Номер письма введен неверно. Попробуйте снова`);
                     }
 
                 } else {
-                    await sendMessage(message.chat.id, 
+                    await sendmsg(msg.chat.id, 
                         "Команда введена неверно. /delete КВЕСТ|ПИСЬМО <номер>");
                 }
             }
@@ -345,7 +349,7 @@ exports.handler = async (event) => {
             break;
         }
         
-        await sendMessage(message.chat.id, "Команда введена неверно. /delete КВЕСТ|ПИСЬМО <номер>");
+        await sendmsg(msg.chat.id, "Команда введена неверно. /delete КВЕСТ|ПИСЬМО <номер>");
         break;
 
 
@@ -361,7 +365,7 @@ exports.handler = async (event) => {
                 if (godExtra == "балл") {
                     aim.points += Number(godNum);
 
-                    await sendMessage(message.chat.id, 
+                    await sendmsg(msg.chat.id, 
                         `Участнику ${aim.name} выдано ${godNum}. Хвала небесам!`);
 
                 } else if (godExtra == "письмо") {
@@ -370,10 +374,10 @@ exports.handler = async (event) => {
                     if (godLetter != null) {
                        aim.deleteBought(godNum);
 
-                        await sendMessage(message.chat.id, 
+                        await sendmsg(msg.chat.id, 
                             `Открытое письмо участника ${aim.name} было удалено. Хвала небесам!`); 
                     } else {
-                        await sendMessage(message.chat.id, 
+                        await sendmsg(msg.chat.id, 
                             `Номер письма введен неверно. Попробуйте снова`); 
                     }
                     
@@ -383,7 +387,7 @@ exports.handler = async (event) => {
             break;
         }
 
-        await sendMessage(message.chat.id, "Команда введена неверно. /god @user БАЛЛ|ПИСЬМО <число>");
+        await sendmsg(msg.chat.id, "Команда введена неверно. /god @user БАЛЛ|ПИСЬМО <число>");
         break;
 
 
@@ -393,7 +397,7 @@ exports.handler = async (event) => {
         for (let i = 0; i < users.length; i++)
             usersString += `[${i+1}]: ${users[i].name} - ${users[i].points}\n`;
 
-        await sendMessage(message.chat.id, usersString);
+        await sendmsg(msg.chat.id, usersString);
         break;
 
 
@@ -440,11 +444,11 @@ exports.handler = async (event) => {
                 break;
             }
 
-            await sendMessage(message.chat.id, `${user.name} ${actionText} ${aim.name}`);
+            await sendmsg(msg.chat.id, `${user.name} ${actionText} ${aim.name}`);
             break;
         }
 
-        await sendMessage(message.chat.id, "Команда введена неверно. /action @user ОБНЯТЬ|ПОЦЕЛОВАТЬ|УКУСИТЬ");
+        await sendmsg(msg.chat.id, "Команда введена неверно. /action @user ОБНЯТЬ|ПОЦЕЛОВАТЬ|УКУСИТЬ");
         break;
     }
 
