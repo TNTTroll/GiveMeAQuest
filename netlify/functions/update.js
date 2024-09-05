@@ -200,7 +200,7 @@ exports.handler = async (event) => {
                         aim.points += Number(aim.giveQuest(questNum).points);
                         await sendmsg(msg.chat.id, 
                             `${aim.name} выполнил квест от ${user.name} и получил ${aim.giveQuest(questNum).points}! Поздравляем!`);
-                        aim.deleteQuest(questNum);
+                        user.deleteQuest(questNum);
                     } else {
                         await sendmsg(msg.chat.id,
                             `Номер квеста введен неверно. Попробуйте снова`);
@@ -211,7 +211,7 @@ exports.handler = async (event) => {
                     if (solvedQuest != null) {
                         await sendmsg(msg.chat.id, 
                             `Сожалеем! ${aim.name} не выполнил квест от ${user.name}!`);
-                        aim.deleteQuest(questNum);
+                        user.deleteQuest(questNum);
                     } else {
                         await sendmsg(msg.chat.id,
                             `Номер квеста введен неверно. Попробуйте снова`);
