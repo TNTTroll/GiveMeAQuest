@@ -66,7 +66,7 @@ exports.handler = async (event) => {
     console.log(event.body);
 
     const { message } = JSON.parse(event.body);
-    const { edited_msg } = JSON.parse(event.body);
+    const { edited_message } = JSON.parse(event.body);
 
     console.log(">>>");
     console.log(message);
