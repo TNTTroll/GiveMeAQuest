@@ -384,7 +384,7 @@ exports.handler = async (event) => {
 
         let usersString = "Список участников Гильдии:\n";
         for (let i = 0; i < users.length; i++)
-            usersString += `[${i+1}]: ${users[i].name} - ${users[i].points/}\n`;
+            usersString += `[${i+1}]: ${users[i].name} - ${users[i].points}\n`;
 
         await sendMessage(message.chat.id, usersString);
         break;
@@ -565,3 +565,10 @@ class Wish {
         this.buy = false;
     }
 }
+
+
+// --- Links
+/*
+https://app.netlify.com/sites/givemeaquest/overview
+https://travishorn.com/building-a-telegram-bot-with-netlify
+*/
