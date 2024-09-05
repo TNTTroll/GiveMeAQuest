@@ -15,7 +15,7 @@ const commands = {
     "/action @user ОБНЯТЬ|ПОЦЕЛОВАТЬ|УКУСИТЬ|ПОКОРМИТЬ": "Совершить действие надо другим участником Гильдии.",
     "/info [@user]": "Узнать всю информацию про участника Гильдии.",
     "/solved @user ДА|НЕТ <номер задания>": "Вы завершаете квест участника Гильдии. ДА - баллы выдаются участнику. НЕТ - задание считается невыполненым и баллы не выдаются.",
-    "/addQuest @user задание <баллы>": "Добавить свой квест. После команды нужно ввести имя пользователя, которому предназначается задание. Потом описать задание, а в конце в '<> скобках указать стоимость.",
+    "/addquest @user задание <баллы>": "Добавить свой квест. После команды нужно ввести имя пользователя, которому предназначается задание. Потом описать задание, а в конце в '<> скобках указать стоимость.",
 };
 
 
@@ -60,6 +60,8 @@ function setDev(me) {
 
 // --- Main
 exports.handler = async (event) => {
+    console.log("Привет! Я работаю, все хорошо ^_^");
+
     const { message } = JSON.parse(event.body);
 
     const commandMatch = message.text.match(/(?<=\/).*?(?=$| |@)/);
@@ -75,7 +77,7 @@ exports.handler = async (event) => {
             extra = extra.substring(extra.search(" ")+1);
 
     const me = message.from;
-    setDev(me);
+    //setDev(me);
 
     const user = getUser(message);
     const aim = (aimText != null) ? getUserByTag(aimText) : null;
@@ -142,7 +144,7 @@ exports.handler = async (event) => {
         break;
 
 
-    case "addQuest":
+    case "addquest":
         if (aim != null && extra != null) {
             let start = extra.search("<");
             let end = extra.search(">");
@@ -301,7 +303,7 @@ exports.handler = async (event) => {
                     let myLetter = user.giveQuest(deleteNum);
                     if (myLetter != null) {
                         await sendMessage(message.chat.id,
-                            `Квеста '${user.quests[deleteNum].text}' удален.`);
+                            `Квест '${user.quests[deleteNum].text}' удален.`);
                         user.deleteQuest(deleteNum);
                     } else {
                         await sendMessage(message.chat.id,
